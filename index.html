@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Stick Figure Start to End and Back</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a1a1a;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            position: relative;
+            width: 600px;
+            height: 300px;
+            background-color: #000;
+            border: 2px solid #00ffcc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .ground {
+            width: 100%;
+            height: 50px;
+            background-color: #006600;
+            position: absolute;
+            bottom: 0;
+        }
+        .actor {
+            position: absolute;
+            bottom: 60px;
+            left: 50px;
+            transition: all 0.1s ease;
+        }
+        .head {
+            width: 30px;
+            height: 30px;
+            background-color: #ffeb3b;
+            border-radius: 50%;
+            position: absolute;
+            top: -40px;
+            left: 10px;
+            box-shadow: 0 0 10px #ffeb3b;
+        }
+        .body {
+            width: 2px;
+            height: 40px;
+            background-color: #ffffff;
+            position: absolute;
+            top: -10px;
+            left: 24px;
+        }
+        .left-leg, .right-leg {
+            width: 2px;
+            height: 30px;
+            background-color: #ffffff;
+            position: absolute;
+            top: 30px;
+            left: 23px;
+            transform-origin: bottom;
+            transition: transform 0.3s ease;
+        }
+        .right-leg {
+            left: 25px;
+        }
+        .left-arm, .right-arm {
+            width: 2px;
+            height: 20px;
+            background-color: #ffffff;
+            position: absolute;
+            top: 0;
+            left: 23px;
+            transform-origin: bottom;
+            transition: transform 0.3s ease;
+        }
+        .right-arm {
+            left: 25px;
+        }
+        #status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #00ffcc;
+            font-size: 16px;
+        }
+    </style>
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let isJumping = false;
+            let isRunning = true;
+            let isLoopingJump = true;
+
+            // Jump Animation with Loop
+            function jump() {
+                if (isLoopingJump && !isJumping) {
+                    isJumping = true;
+                    $("#status").text("Jumping...");
+
+                    // Pre-jump: Legs bend and arms swing
+                    $(".left-leg").css("transform", "rotate(-45deg)");
+                    $(".right-leg").css("transform", "rotate(45deg)");
+                    $(".left-arm").css("transform", "rotate(45deg)");
+                    $(".right-arm").css("transform", "rotate(-45deg)");
+
+                    // Jump up
+                    $(".actor").animate({ bottom: "160px" }, 500, function() {
+                        // At peak: Legs straight, arms swing back
+                        $(".left-leg").css("transform", "rotate(0deg)");
+                        $(".right-leg").css("transform", "rotate(0deg)");
+                        $(".left-arm").css("transform", "rotate(-30deg)");
+                        $(".right-arm").css("transform", "rotate(30deg)");
+
+                        // Jump down
+                        $(".actor").animate({ bottom: "60px" }, 500, function() {
+                            // Landing: Return to normal
+                            $(".left-leg, .right-leg, .left-arm, .right-arm").css("transform", "rotate(0deg)");
+                            isJumping = false;
+                            if (isLoopingJump) {
+                                $("#status").text("Running...");
+                                setTimeout(jump, 500); // Loop jump
+                            }
+                        });
+                    });
+                }
+            }
+
+            // Run Animation with Alternating Legs
+            function run() {
+                if (isRunning) {
+                    // Step 1: Left leg forward, right leg back
+                    $(".left-leg").animate({ transform: "rotate(30deg)" }, 300);
+                    $(".right-leg").animate({ transform: "rotate(-30deg)" }, 300);
+                    $(".left-arm").animate({ transform: "rotate(-30deg)" }, 300);
+                    $(".right-arm").animate({ transform: "rotate(30deg)" }, 300);
+
+                    // Step 2: Right leg forward, left leg back
+                    setTimeout(function() {
+                        $(".left-leg").animate({ transform: "rotate(-30deg)" }, 300);
+                        $(".right-leg").animate({ transform: "rotate(30deg)" }, 300);
+                        $(".left-arm").animate({ transform: "rotate(30deg)" }, 300);
+                        $(".right-arm").animate({ transform: "rotate(-30deg)" }, 300);
+                    }, 300);
+
+                    // Move actor from start to end
+                    $(".actor").animate({ left: "650px" }, 2000, function() {
+                        $("#status").text("Returning...");
+                        $(this).animate({ left: "50px" }, 2000, function() {
+                            $("#status").text("Running...");
+                            if (isRunning) run(); // Loop back to start
+                        });
+                    });
+                }
+            }
+
+            // Start jumping and running
+            $("#status").text("Running...");
+            jump(); // Start the looping jump
+            run();  // Start the run from start to end and back
+
+            // Stop on double click
+            $(document).on("dblclick", function() {
+                isRunning = false;
+                isLoopingJump = false;
+                $("#status").text("Stopped");
+                $(".actor").stop();
+                $(".left-leg, .right-leg, .left-arm, .right-arm").css("transform", "rotate(0deg)");
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div id="status"></div>
+        <div class="ground"></div>
+        <div class="actor">
+            <div class="head"></div>
+            <div class="body"></div>
+            <div class="left-leg"></div>
+            <div class="right-leg"></div>
+            <div class="left-arm"></div>
+            <div class="right-arm"></div>
+        </div>
+    </div>
+</body>
+</html>
